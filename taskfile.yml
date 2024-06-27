@@ -1,0 +1,17 @@
+version: "3"
+
+vars:
+  EXE: "url-shortner"
+
+tasks:
+  run:
+    desc: Run the app
+    cmds:
+      - GOFLAGS=-mod=mod go build -o bin/{{.EXE}} internal/main.go
+      - ./bin/{{.EXE}}
+
+  clean:
+    desc: Clean all cache
+    cmds:
+      - GOFLAGS=-mod=mod go clean -cache
+      - GOFLAGS=-mod=mod go clean -modcache
