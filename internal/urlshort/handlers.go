@@ -1,6 +1,7 @@
 package urlshort
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -40,17 +41,34 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 //
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
-func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
+func YAMLHandler(ymlData []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	var paths []map[string]string
 
-	err := yaml.Unmarshal(yml, &paths)
+	err := yaml.Unmarshal(ymlData, &paths)
 	if err != nil {
-		log.Println("Error occurred while parsing yaml data: ", yml)
+		log.Println("Error occurred while parsing yaml data: ", ymlData)
 		return nil, err
 	}
 	
 	pathsToUrls := make(map[string]string)
 	
+	for _, path := range paths {
+		pathsToUrls[path["path"]] = path["url"]
+	}
+
+	return MapHandler(pathsToUrls, fallback), nil
+}
+
+func JSONHandler(jsonData []byte, fallback http.Handler) (http.HandlerFunc, error) {
+	var paths []map[string]string
+
+	if err := json.Unmarshal(jsonData, &paths); err != nil {
+		log.Println("Error occurred while parsing json data: ", jsonData)
+		return nil, err
+	}
+
+	pathsToUrls := make(map[string]string)
+
 	for _, path := range paths {
 		pathsToUrls[path["path"]] = path["url"]
 	}
